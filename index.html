@@ -1,0 +1,196 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Diamond Game</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+
+        @font-face {
+            font-family: "PressStart2P";
+            src: url('./assets/PressStart2P-Regular.ttf');
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            font-family: "PressStart2P";
+        }
+
+     
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 400 },
+                debug: false
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    let player = '';
+    let platforms;
+    let cursors;
+    let diamonds;
+    let bombs;
+    let score = 0;
+    let scoreText;
+    let hitSound;
+    let coinSound;
+    let gameOver = false;
+ 
+
+    var game = new Phaser.Game(config);
+
+    function preload ()
+    {
+        this.load.image('sky', 'assets/sky.png');
+        this.load.image('ground', 'assets/platform.png');
+        this.load.atlas('dino', 'assets/dinoplayersheet.png', 'assets/dinoplayersheet.json');
+        this.load.image('diamond', 'assets/diamond.png')
+        this.load.image('bomb', 'assets/bomb.png');
+        this.load.audio('hit', 'assets/dying.mp3');
+        this.load.audio('coinSound', './assets/coinSound.mp3')
+        this.load.audio('jumpSound', 'assets/jumpsound.mp3')
+  
+    }
+
+    function create ()
+    {
+        
+        this.add.image(400, 300, 'sky');
+        scoreText = this.add.text(16, 18, 'score: ' + score, {fontSize: '23px', fill: '#000'})
+
+        //Sounds
+        hitSound = this.sound.add('hit')
+        coinSound = this.sound.add('coinSound')
+        jumpSound = this.sound.add('jumpSound')
+
+
+        //Player
+        player = this.physics.add.sprite(100, 400, 'dino').setScale(0.2)
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        this.anims.create(
+		{
+			key: 'walking',
+			frames: this.anims.generateFrameNames('dino', {prefix: 'walk', end: 10, zeroPad: 3}),
+			repeat: -1
+	})
+
+
+        //Platforms
+        platforms = this.physics.add.staticGroup()
+        platforms.create(400, 600, 'ground').setScale(2).refreshBody(true);
+
+        
+        platforms.create(600, 400, 'ground');
+        platforms.create(50, 250, 'ground');
+        platforms.create(750, 220, 'ground');
+
+        //Diamonds:
+        diamonds = this.physics.add.group({
+            key: 'diamond',
+            repeat: 11,
+            setXY: { x: 12, y: 0, stepX: 70 }
+        })
+
+
+        //Bombs
+        bombs = this.physics.add.group();
+        let bomb = bombs.create(70, 140, 'bomb');
+        bomb.setCollideWorldBounds(true);
+        bomb.setVelocityX(200)
+        bomb.setBounce(1);
+
+        let SecondBomb = bombs.create(560, 140, 'bomb');
+        SecondBomb.setCollideWorldBounds(true);
+        SecondBomb.setVelocityX(-200)
+        SecondBomb.setBounce(1);
+
+
+         //Colliders
+         this.physics.add.collider(player, platforms);
+         this.physics.add.collider(diamonds, platforms);
+         this.physics.add.collider(bombs, platforms);
+         this.physics.add.collider(bombs, player, hitBomb, null, this)
+
+         //Overlaps
+         this.physics.add.overlap(player, diamonds, collectDiamond, null, this)
+         
+
+        //Cursors
+        cursors = this.input.keyboard.createCursorKeys();
+
+    }
+
+    function update ()
+    {
+        if(gameOver === true) {
+            return;
+        }
+ 
+        if(cursors.right.isDown) {
+            player.setVelocityX(200);
+            player.flipX = false;
+            player.anims.play('walking', true)
+     
+        } else if (cursors.left.isDown) {
+            player.setVelocityX(-200);
+            player.flipX = true;
+            player.anims.play('walking', true)
+        } else {
+            player.setVelocityX(0);
+            player.anims.stop('walking', true);
+            
+          
+        }
+
+        if(cursors.up.isDown && player.body.touching.down) {
+            jumpSound.play();
+            player.setVelocityY(-390);
+        }
+    }
+
+    function collectDiamond(player, diamonds) {
+		diamonds.disableBody(true, true);
+        score += 10;
+        scoreText.setText('score: ' + score);
+        coinSound.play()
+        gameOver = 'ja';
+     
+
+
+	}
+
+    function hitBomb (player, bomb) {
+        hitSound.play()
+        this.anims.pauseAll();
+        this.physics.pause();
+        this.add.text(300, 260, 'Game Over', { fontSize: '24px', fill: '#000000', fontFamily: 'PressStart2P' })
+        gameOver = true;
+
+      
+    }
+
+
+</script>
+
+</body>
+</html>
