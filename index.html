@@ -6,16 +6,11 @@
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
     <style type="text/css">
 
-        @font-face {
-            font-family: "PressStart2P";
-            src: url('./assets/PressStart2P-Regular.ttf');
-        }
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 0;
-            font-family: "PressStart2P";
         }
 
      
@@ -111,19 +106,16 @@
             setXY: { x: 12, y: 0, stepX: 70 }
         })
 
+         diamonds.children.iterate(function (child) {
+
+         child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+
+         });
+
 
         //Bombs
         bombs = this.physics.add.group();
-        let bomb = bombs.create(70, 140, 'bomb');
-        bomb.setCollideWorldBounds(true);
-        bomb.setVelocityX(200)
-        bomb.setBounce(1);
-
-        let SecondBomb = bombs.create(560, 140, 'bomb');
-        SecondBomb.setCollideWorldBounds(true);
-        SecondBomb.setVelocityX(-200)
-        SecondBomb.setBounce(1);
-
+      
 
          //Colliders
          this.physics.add.collider(player, platforms);
@@ -172,22 +164,73 @@
 		diamonds.disableBody(true, true);
         score += 10;
         scoreText.setText('score: ' + score);
-        coinSound.play()
-        gameOver = 'ja';
+        coinSound.play(); 
      
+     
+        
+        if (score === 120) {
+            dropBomb();
+            dropDiamonds();   
+        } else if (score === 240) {
+            dropSecondBomb();
+            dropDiamonds()
+        } else if (score === 360) {
+            dropThirdBomb();
+            dropDiamonds();
+        } else if (score === 480) {
+            this.anims.pauseAll();
+            this.physics.pause();
+            this.add.text(330, 260, 'You won!', { fontSize: '26px', fill: '#000000'})
+            gameOver = true;
+        }
+
+        
+    }
+
+    function dropDiamonds() {
+        for (let i = 0; i < 13; i++) {
+            diamonds.create(i * 70 + 12, 0, 'diamond');
+            diamonds.children.iterate(function (child) {
+            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+
+});
 
 
-	}
+        }
+    }
 
     function hitBomb (player, bomb) {
         hitSound.play()
         this.anims.pauseAll();
         this.physics.pause();
-        this.add.text(300, 260, 'Game Over', { fontSize: '24px', fill: '#000000', fontFamily: 'PressStart2P' })
+        this.add.text(300, 260, 'Game Over', { fontSize: '26px', fill: '#000000'})
         gameOver = true;
-
-      
     }
+
+    function dropBomb() {
+        let bomb = bombs.create(70, 0, 'bomb');
+        bomb.setCollideWorldBounds(true);
+        bomb.setVelocityX(200)
+        bomb.setBounce(1);
+    }
+
+    function dropSecondBomb() {
+        let SecondBomb = bombs.create(560, 0, 'bomb');
+        SecondBomb.setCollideWorldBounds(true);
+        SecondBomb.setVelocityX(-200)
+        SecondBomb.setBounce(1);
+    }
+
+    function dropThirdBomb() {
+        let SecondBomb = bombs.create(580, 0, 'bomb');
+        SecondBomb.setCollideWorldBounds(true);
+        SecondBomb.setVelocityX(-180)
+        SecondBomb.setBounce(1);
+    }
+
+
+    
+
 
 
 </script>
