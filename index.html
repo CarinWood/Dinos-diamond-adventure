@@ -80,9 +80,7 @@
 
 
         //Player
-        player = this.physics.add.sprite(100, 400, 'dino').setScale(0.2)
-        player.setBounce(0.2);
-        player.setCollideWorldBounds(true);
+     
 
         this.anims.create(
 		{
@@ -91,12 +89,12 @@
 			repeat: -1
 	})
 
+        player = this.physics.add.sprite(100, 400, 'dino', 'walk001').setScale(0.2)
+        player.setCollideWorldBounds(true);
 
         //Platforms
         platforms = this.physics.add.staticGroup()
         platforms.create(400, 600, 'ground').setScale(2).refreshBody(true);
-
-        
         platforms.create(600, 400, 'ground');
         platforms.create(50, 250, 'ground');
         platforms.create(750, 220, 'ground');
@@ -151,15 +149,21 @@
             player.anims.play('walking', true)
         } else {
             player.setVelocityX(0);
-            player.anims.stop('walking', true);
-            
-          
+            player.anims.stop('walking', true); 
         }
 
-        if(cursors.up.isDown && player.body.touching.down) {
-            jumpSound.play();
-            player.setVelocityY(-390);
+        const didPressJump = Phaser.Input.Keyboard.JustDown(cursors.up);
+
+        if(didPressJump) {
+            if(player.body.onFloor()) {
+                this.canDoubleJump = true;
+                player.body.setVelocityY(-300);
+            }else if(this.canDoubleJump) {
+                this.canDoubleJump = false;
+                player.body.setVelocityY(-300);
+            }
         }
+
     }
 
     function collectDiamond(player, diamonds) {
