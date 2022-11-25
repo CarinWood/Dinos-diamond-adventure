@@ -57,6 +57,7 @@
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.atlas('dino', 'assets/dinoplayersheet.png', 'assets/dinoplayersheet.json');
+        this.load.atlas('dinoJump', 'assets/dinojump.png', 'assets/dinojump.json');
         this.load.image('diamond', 'assets/diamond.png')
         this.load.image('bomb', 'assets/bomb.png');
         this.load.audio('hit', 'assets/dying.mp3');
@@ -80,17 +81,25 @@
 
 
         //Player
-     
-
         this.anims.create(
 		{
 			key: 'walking',
 			frames: this.anims.generateFrameNames('dino', {prefix: 'walk', end: 10, zeroPad: 3}),
 			repeat: -1
-	})
+	    })
+        
+        this.anims.create(
+		{
+			key: 'jumping',
+			frames: this.anims.generateFrameNames('dinoJump', {prefix: 'jump', end: 12, zeroPad: 3}),
+			repeat: -1
+	    })
 
         player = this.physics.add.sprite(100, 400, 'dino', 'walk001').setScale(0.2)
         player.setCollideWorldBounds(true);
+        
+ 
+     
 
         //Platforms
         platforms = this.physics.add.staticGroup()
@@ -142,6 +151,7 @@
             player.setVelocityX(200);
             player.flipX = false;
             player.anims.play('walking', true)
+       
      
         } else if (cursors.left.isDown) {
             player.setVelocityX(-200);
@@ -157,12 +167,14 @@
         if(didPressJump) {
             if(player.body.onFloor()) {
                 this.canDoubleJump = true;
-                player.body.setVelocityY(-300);
+                player.body.setVelocityY(-400);
+         
             }else if(this.canDoubleJump) {
                 this.canDoubleJump = false;
-                player.body.setVelocityY(-300);
+                player.body.setVelocityY(-400);
             }
         }
+
 
     }
 
